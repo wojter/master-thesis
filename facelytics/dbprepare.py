@@ -1,19 +1,25 @@
 import pandas as pd
 import os
+import shutil
 
 total_images = 202_599
 total_identities = 10_177
 min_images_of_person = 8
 
-identity_path = "./CelebA/Anno/identity_CelebA.txt"
+identity_path = "CelebA\Anno\identity_CelebA.txt"
+imgs_path = "CelebA\img_celeba2"
+result_imgs_path = "CelebA\img_prepared"
 
-assert os.path.isfile(identity_path), f"Not find identity file at path {identity_path}"
+assert os.path.isfile(
+    identity_path), f"Not find identity file at path {identity_path}"
 
 colnames = ['file', 'identity']
 identities = pd.read_csv(identity_path, sep=" ", names=colnames, header=None)
 
-assert identities['file'].nunique() == total_images, "Import error, wrong total img number"
-assert identities['identity'].nunique() == total_identities, "Import error, wrong total identities number"
+assert identities['file'].nunique(
+) == total_images, "Import error, wrong total img number"
+assert identities['identity'].nunique(
+) == total_identities, "Import error, wrong total identities number"
 assert identities.isna().values.any() == False, "NaN in table detected"
 
 temp = identities.drop("file", axis=1)
@@ -21,3 +27,23 @@ temp = temp.groupby('identity').size().reset_index(name='occurences')
 temp = temp.drop(temp.index[temp["occurences"] < min_images_of_person])
 
 print(temp)
+
+
+def cp_rename_img(source_dir_path, source_file_name, dest_dir_path, dest_file_name):
+    print(os.path.isfile(os.path.join(source_dir_path, source_file_name)))
+    if os.path.isfile(os.path.join(source_dir_path, source_file_name)):
+        if not os.path.exists(os.path.join(dest_dir_path, dest_file_name)):
+            shutil.copy(os.path.join(source_dir_path, source_file_name),
+                        os.path.join(dest_dir_path, dest_file_name))
+        else:
+            raise FileExistsError("Img exist in dest dir")
+    else:
+        raise FileNotFoundError("Img file not exist")
+
+try:
+    cp_rename_img(imgs_path, '000001.jpg', result_imgs_path, '1.jpg')
+except FileNotFoundError:
+    print("No file to cp an rename")
+except FileExistsError:
+    print("File already exist in dest dir")
+print(os.path.isfile(os.path.join(imgs_path, '000001.jpg')))
