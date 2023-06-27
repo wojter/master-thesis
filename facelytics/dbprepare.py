@@ -3,6 +3,11 @@ import os
 import shutil
 import argparse
 
+import cv2
+
+from deepface.commons import functions
+from deepface.detectors import FaceDetector
+
 total_images = 202_599
 total_identities = 10_177
 
@@ -20,10 +25,11 @@ def args_inpust():
                         default=8, help="Number of imgs of one identity")
     return parser.parse_args()
 
+
 def load_parse_identities_list():
     assert os.path.isfile(
         identity_path), f"Not find identity file at path {identity_path}"
-    
+
     colnames = ['file', 'identity']
     identities = pd.read_csv(identity_path, sep=" ",
                              names=colnames, header=None)
@@ -39,6 +45,7 @@ def load_parse_identities_list():
 
     return identities, temp
 
+
 def cp_rename_img(source_dir_path, source_file_name, dest_dir_path, dest_file_name):
     print(os.path.isfile(os.path.join(source_dir_path, source_file_name)))
     if os.path.isfile(os.path.join(source_dir_path, source_file_name)):
@@ -51,15 +58,33 @@ def cp_rename_img(source_dir_path, source_file_name, dest_dir_path, dest_file_na
         raise FileNotFoundError("Img file not exist")
 
 
+def get_face_detector(detector_backend):
+    face_detector = FaceDetector.build_model(detector_backend)
+    return face_detector
+
+
 if __name__ == "__main__":
     args = args_inpust()
     min_images_of_person = int(args.num_img_of_identity)
     total_individuals_db = int(args.num_identities)
-    identities, identities_unique = load_parse_identities_list()
-    try:
-        cp_rename_img(imgs_path, '000001.jpg', result_imgs_path, '1.jpg')
-    except FileNotFoundError:
-        print("No file to cp an rename")
-    except FileExistsError:
-        print("File already exist in dest dir")
-    print(os.path.isfile(os.path.join(imgs_path, '000001.jpg')))
+    # identities, identities_unique = load_parse_identities_list()
+
+    face_detector = get_face_detector("mtcnn")
+    images = ["000001.jpg", "000002.jpg", "000003.jpg", "000004.jpg", "000005.jpg",
+              "000006.jpg", "000007.jpg", "000008.jpg", "000009.jpg", "000010.jpg",]
+    from time import time
+    multiple_faces = []
+    start = time()
+    for img_name in images:
+        img = os.path.join(imgs_path, img_name)
+        img = functions.load_image(img)
+        face_obj = FaceDetector.detect_faces(
+        face_detector, "mtcnn", img, align=True)
+        # from PIL import Image
+        # im = Image.fromarray(face_obj[0][0])
+        # im.save(os.path.join(result_imgs_path,img_name))
+        if(len(face_obj) != 1):
+            multiple_faces.append(img_name)
+        cv2.imwrite(os.path.join(result_imgs_path, img_name), face_obj[0][0])
+
+    print("detect 10 photo time", time()-start)
