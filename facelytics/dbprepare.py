@@ -12,7 +12,7 @@ total_images = 202_599
 total_identities = 10_177
 
 identity_path = "CelebA\Anno\identity_CelebA.txt"
-imgs_path = "CelebA\img_celeba2"
+imgs_path = "CelebA\img_celeba"
 result_imgs_path = "CelebA\img_prepared"
 
 
@@ -41,7 +41,7 @@ def load_parse_identities_list():
 
     temp = identities.drop("file", axis=1)
     temp = temp.groupby('identity').size().reset_index(name='occurences')
-    temp = temp.drop(temp.index[temp["occurences"] < min_images_of_person])
+    temp = temp.drop(temp.index[temp["occurences"] < (min_images_of_person + 1)])
 
     return identities, temp
 
