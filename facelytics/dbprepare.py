@@ -22,7 +22,7 @@ def args_inpust():
     parser.add_argument("-n", "--num_identities", default=5000,
                         help="Specify number images to put in DB")
     parser.add_argument("-k", "--num_img_of_identity",
-                        default=8, help="Number of imgs of one identity")
+                        default=11, help="Number of imgs of one identity")
     return parser.parse_args()
 
 
@@ -67,43 +67,54 @@ def cropp_rename_img(src_name, dst_name, face_detector):
     src_img_path = os.path.join(imgs_path, src_name)
     img = functions.load_image(src_img_path)
     face_obj = FaceDetector.detect_faces(
-        face_detector, "mtcnn", img, align=True)
+        face_detector, "mtcnn", img, align=False)
     if len(face_obj) == 0:
         return (src_name, dst_name)
     cv2.imwrite(os.path.join(result_imgs_path, dst_name), face_obj[0][0])
-    return ()
-    pass
+    return None
+
 
 def img_rename_generator(ident_idx, img_idx):
     dst_name = f"{ident_idx:05d}_{img_idx:02d}.jpg"
-    print(dst_name)
+    return dst_name
+
 
 def filter_cropp_rename_imgs(ident, ident_uniq, tot_ident_in_db, tot_imgs_of_ident, face_detector):
-    # total imgs 5000, photos of one 11, no face on photo
     images_naming = {}
     total_identity_index = 0
+    no_detections = []
     for index, row in ident.iterrows():
-        # print(index, row.file, row.identity)
         if row.identity in ident_uniq["identity"].values:
             if row.identity in images_naming:
                 total_index, total_img = images_naming[row.identity]
                 if total_img < tot_imgs_of_ident:
-                    cropp_rename_img(face_detector)
                     total_img += 1
-                    images_naming[row.identity] = (total_index, total_img)
+
+                    res = cropp_rename_img(row.file, img_rename_generator(
+                        total_index, total_img), face_detector)
+                    if res is None:
+                        images_naming[row.identity] = (total_index, total_img)
+                    else:
+                        total_img -= 1
+                        no_detections.append(res)
                 else:
                     pass
             else:
                 if total_identity_index < tot_ident_in_db:
-                    cropp_rename_img(face_detector)
                     total_identity_index += 1
-                    images_naming[row.identity] = (total_identity_index, 1)
+                    res = cropp_rename_img(row.file, img_rename_generator(
+                        total_identity_index, 1), face_detector)
+                    if res is None:
+                        images_naming[row.identity] = (total_identity_index, 1)
+                    else:
+                        total_identity_index -= 1
                 else:
                     pass
         else:
             pass
 
     print(len(images_naming))
+    print("No detections list:\n", no_detections)
 
 
 if __name__ == "__main__":
