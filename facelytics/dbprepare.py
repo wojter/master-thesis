@@ -74,6 +74,9 @@ def cropp_rename_img(src_name, dst_name, face_detector):
     return ()
     pass
 
+def img_rename_generator(ident_idx, img_idx):
+    dst_name = f"{ident_idx:05d}_{img_idx:02d}.jpg"
+    print(dst_name)
 
 def filter_cropp_rename_imgs(ident, ident_uniq, tot_ident_in_db, tot_imgs_of_ident, face_detector):
     # total imgs 5000, photos of one 11, no face on photo
