@@ -151,13 +151,15 @@ def generate_imgs_list(identities, ident_count):
 def iterate(imgs_paths, face_detector):
     ident_index = 1
     no_detections = []
-    for key, img_paths in imgs_path.items():
-        print("---------------------------\nIDENT  ", ident_index)
+    start_detections = time.time()
+    for key, img_paths in imgs_paths.items():
+        print("---------------------------\nIDENT processing  ", ident_index)
         img_idx = 1
+        start = time.time()
         for img_path in img_paths:
             src_path = img_rename_generator(ident_index, img_idx)
             res = cropp_rename_img(img_path, src_path, face_detector)
-            if res is None:
+            if res is not None:
                 no_detections.append(res)
                 continue
             else:
@@ -167,8 +169,9 @@ def iterate(imgs_paths, face_detector):
         ident_index += 1
         if ident_index > total_individuals_db:
             break
-    print("No detection: ", res)
-
+        print(ident_index, " processed in ", time.time()-start)
+    print("-----------\nTotal time processing ", time.time() - start_detections)
+    print("No detection list: ", res)
 
 
 if __name__ == "__main__":
@@ -182,6 +185,3 @@ if __name__ == "__main__":
     print(type(img_paths))
     face_detector = get_face_detector("mtcnn")
     iterate(img_paths, face_detector)
-    # face_detector = get_face_detector("mtcnn")
-    # filter_cropp_rename_imgs(
-    #     identities, identities_unique, total_individuals_db, min_images_of_person, face_detector)
