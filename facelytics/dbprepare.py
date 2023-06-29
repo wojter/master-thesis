@@ -41,9 +41,12 @@ def load_parse_identities_list():
 
     temp = identities.drop("file", axis=1)
     temp = temp.groupby('identity').size().reset_index(name='occurences')
-    temp = temp.drop(temp.index[temp["occurences"] < (min_images_of_person + 1)])
-
-    return identities, temp
+    temp = temp.drop(temp.index[temp["occurences"]
+                     < (min_images_of_person + 2)])
+    df = identities["identity"].value_counts().reset_index()
+    print(df)
+    # print(identities.groupby("identity").count())
+    return identities, temp, df
 
 
 def cp_rename_img(source_dir_path, source_file_name, dest_dir_path, dest_file_name):
@@ -117,14 +120,38 @@ def filter_cropp_rename_imgs(ident, ident_uniq, tot_ident_in_db, tot_imgs_of_ide
     print("No detections list:\n", no_detections)
 
 
+def parse(identities, df):
+    df = df.drop(df.index[df["count"]
+                            < min_images_of_person+2])
+    img_paths = {}
+    set_counts = set(df['identity'])
+    for idx, row in identities.iterrows():
+        if row['identity'] in set_counts:
+            if row['identity'] in img_paths:
+                actual_paths = img_paths[row['identity']]
+                if len(actual_paths) < min_images_of_person:
+                    actual_paths.append(row['file'])
+                    img_paths[row['identity']] = actual_paths
+                else:
+                    pass
+            else:
+                img_paths[row['identity']] = [row['file']]
+    print("Identities: ", len(img_paths))
+    length = 0
+    for key, value in img_paths.items():
+        length += len(value)
+    print("Total imgs:", length)
+    return img_paths
+
+
 if __name__ == "__main__":
     args = args_inpust()
     min_images_of_person = int(args.num_img_of_identity)
     total_individuals_db = int(args.num_identities)
 
-    identities, identities_unique = load_parse_identities_list()
-
+    identities, identities_unique, df = load_parse_identities_list()
     print(identities_unique)
-    face_detector = get_face_detector("mtcnn")
-    filter_cropp_rename_imgs(
-        identities, identities_unique, total_individuals_db, min_images_of_person, face_detector)
+    img_paths = parse(identities, df)
+    # face_detector = get_face_detector("mtcnn")
+    # filter_cropp_rename_imgs(
+    #     identities, identities_unique, total_individuals_db, min_images_of_person, face_detector)
