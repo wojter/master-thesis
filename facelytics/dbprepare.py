@@ -26,7 +26,7 @@ def args_inpust():
     return parser.parse_args()
 
 
-def load_parse_identities_list():
+def load_identities_list():
     assert os.path.isfile(
         identity_path), f"Not find identity file at path {identity_path}"
 
@@ -38,16 +38,18 @@ def load_parse_identities_list():
     assert identities['identity'].nunique(
     ) == total_identities, "Import error, wrong total identities number"
     assert identities.isna().values.any() == False, "NaN in table detected"
+    return identities
 
+def parse_identities_list(identities):
     temp = identities.drop("file", axis=1)
     temp = temp.groupby('identity').size().reset_index(name='occurences')
     temp = temp.drop(temp.index[temp["occurences"]
                      < (min_images_of_person + 2)])
-    df = identities["identity"].value_counts().reset_index()
-    print(df)
-    # print(identities.groupby("identity").count())
-    return identities, temp, df
+    return temp
 
+def parse_ident_list(identities):
+    df = identities["identity"].value_counts().reset_index()
+    return df
 
 def cp_rename_img(source_dir_path, source_file_name, dest_dir_path, dest_file_name):
     print(os.path.isfile(os.path.join(source_dir_path, source_file_name)))
@@ -120,11 +122,11 @@ def filter_cropp_rename_imgs(ident, ident_uniq, tot_ident_in_db, tot_imgs_of_ide
     print("No detections list:\n", no_detections)
 
 
-def parse(identities, df):
-    df = df.drop(df.index[df["count"]
+def generate_imgs_list(identities, ident_count):
+    ident_count = ident_count.drop(ident_count.index[ident_count["count"]
                             < min_images_of_person+2])
     img_paths = {}
-    set_counts = set(df['identity'])
+    set_counts = set(ident_count['identity'])
     for idx, row in identities.iterrows():
         if row['identity'] in set_counts:
             if row['identity'] in img_paths:
@@ -149,9 +151,9 @@ if __name__ == "__main__":
     min_images_of_person = int(args.num_img_of_identity)
     total_individuals_db = int(args.num_identities)
 
-    identities, identities_unique, df = load_parse_identities_list()
-    print(identities_unique)
-    img_paths = parse(identities, df)
+    identities = load_identities_list()
+    ident_count = parse_ident_list(identities)
+    img_paths = generate_imgs_list(identities, ident_count)
     # face_detector = get_face_detector("mtcnn")
     # filter_cropp_rename_imgs(
     #     identities, identities_unique, total_individuals_db, min_images_of_person, face_detector)
