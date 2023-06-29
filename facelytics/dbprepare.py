@@ -2,6 +2,7 @@ import pandas as pd
 import os
 import shutil
 import argparse
+import time
 
 import cv2
 
@@ -22,7 +23,7 @@ def args_inpust():
     parser.add_argument("-n", "--num_identities", default=5000,
                         help="Specify number images to put in DB")
     parser.add_argument("-k", "--num_img_of_identity",
-                        default=11, help="Number of imgs of one identity")
+                        default=12, help="Number of imgs of one identity")
     return parser.parse_args()
 
 
@@ -123,8 +124,9 @@ def filter_cropp_rename_imgs(ident, ident_uniq, tot_ident_in_db, tot_imgs_of_ide
 
 
 def generate_imgs_list(identities, ident_count):
+    start = time.time()
     ident_count = ident_count.drop(ident_count.index[ident_count["count"]
-                            < min_images_of_person+2])
+                            < min_images_of_person+7])
     img_paths = {}
     set_counts = set(ident_count['identity'])
     for idx, row in identities.iterrows():
@@ -143,7 +145,30 @@ def generate_imgs_list(identities, ident_count):
     for key, value in img_paths.items():
         length += len(value)
     print("Total imgs:", length)
+    print("Time to generate imgs paths: ", time.time() - start)
     return img_paths
+
+def iterate(imgs_paths, face_detector):
+    ident_index = 1
+    no_detections = []
+    for key, img_paths in imgs_path.items():
+        print("---------------------------\nIDENT  ", ident_index)
+        img_idx = 1
+        for img_path in img_paths:
+            src_path = img_rename_generator(ident_index, img_idx)
+            res = cropp_rename_img(img_path, src_path, face_detector)
+            if res is None:
+                no_detections.append(res)
+                continue
+            else:
+                img_idx += 1
+                if img_idx > min_images_of_person:
+                    break
+        ident_index += 1
+        if ident_index > total_individuals_db:
+            break
+    print("No detection: ", res)
+
 
 
 if __name__ == "__main__":
@@ -154,6 +179,9 @@ if __name__ == "__main__":
     identities = load_identities_list()
     ident_count = parse_ident_list(identities)
     img_paths = generate_imgs_list(identities, ident_count)
+    print(type(img_paths))
+    face_detector = get_face_detector("mtcnn")
+    iterate(img_paths, face_detector)
     # face_detector = get_face_detector("mtcnn")
     # filter_cropp_rename_imgs(
     #     identities, identities_unique, total_individuals_db, min_images_of_person, face_detector)
