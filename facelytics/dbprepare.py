@@ -24,6 +24,8 @@ def args_inpust():
                         help="Specify number images to put in DB")
     parser.add_argument("-k", "--num_img_of_identity",
                         default=12, help="Number of imgs of one identity")
+    parser.add_argument("-t", "--parse-type", default=1,
+                        help="Parse type: 0-detection, 1-only copy")
     return parser.parse_args()
 
 
@@ -41,6 +43,7 @@ def load_identities_list():
     assert identities.isna().values.any() == False, "NaN in table detected"
     return identities
 
+
 def parse_identities_list(identities):
     temp = identities.drop("file", axis=1)
     temp = temp.groupby('identity').size().reset_index(name='occurences')
@@ -48,12 +51,13 @@ def parse_identities_list(identities):
                      < (min_images_of_person + 2)])
     return temp
 
+
 def parse_ident_list(identities):
     df = identities["identity"].value_counts().reset_index()
     return df
 
+
 def cp_rename_img(source_dir_path, source_file_name, dest_dir_path, dest_file_name):
-    print(os.path.isfile(os.path.join(source_dir_path, source_file_name)))
     if os.path.isfile(os.path.join(source_dir_path, source_file_name)):
         if not os.path.exists(os.path.join(dest_dir_path, dest_file_name)):
             shutil.copy(os.path.join(source_dir_path, source_file_name),
@@ -126,7 +130,7 @@ def filter_cropp_rename_imgs(ident, ident_uniq, tot_ident_in_db, tot_imgs_of_ide
 def generate_imgs_list(identities, ident_count):
     start = time.time()
     ident_count = ident_count.drop(ident_count.index[ident_count["count"]
-                            < min_images_of_person+7])
+                                                     < min_images_of_person+7])
     img_paths = {}
     set_counts = set(ident_count['identity'])
     for idx, row in identities.iterrows():
@@ -148,7 +152,8 @@ def generate_imgs_list(identities, ident_count):
     print("Time to generate imgs paths: ", time.time() - start)
     return img_paths
 
-def iterate(imgs_paths, face_detector):
+
+def iterate_detection(imgs_paths, face_detector):
     ident_index = 1
     no_detections = []
     start_detections = time.time()
@@ -170,18 +175,42 @@ def iterate(imgs_paths, face_detector):
         if ident_index > total_individuals_db:
             break
         print(ident_index, " processed in ", time.time()-start)
-    print("-----------\nTotal time processing ", time.time() - start_detections)
+    print("-----------\nTotal time processing ",
+          time.time() - start_detections)
     print("No detection list: ", res)
+
+
+def iteration_only_copy(imgs_paths):
+    ident_index = 1
+    start_copy = time.time()
+    for key, img_paths in imgs_paths.items():
+        print("IDENT processing  ", ident_index)
+        img_idx = 1
+        for img_path in img_paths:
+            dst_name = img_rename_generator(ident_index, img_idx)
+            res = cp_rename_img(imgs_path, img_path,
+                                result_imgs_path, dst_name)
+            img_idx += 1
+        ident_index += 1
+        if ident_index > total_individuals_db:
+            break
+    print("-----------\nTotal time processing ",
+          time.time() - start_copy)
 
 
 if __name__ == "__main__":
     args = args_inpust()
     min_images_of_person = int(args.num_img_of_identity)
     total_individuals_db = int(args.num_identities)
+    parse_type = int(args.parse_type)
 
     identities = load_identities_list()
     ident_count = parse_ident_list(identities)
     img_paths = generate_imgs_list(identities, ident_count)
     print(type(img_paths))
-    face_detector = get_face_detector("mtcnn")
-    iterate(img_paths, face_detector)
+
+    if parse_type == 0:
+        face_detector = get_face_detector("mtcnn")
+        iterate_detection(img_paths, face_detector)
+    elif parse_type == 1:
+        iteration_only_copy(img_paths)
