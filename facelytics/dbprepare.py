@@ -162,8 +162,8 @@ def iterate_detection(imgs_paths, face_detector):
         img_idx = 1
         start = time.time()
         for img_path in img_paths:
-            src_path = img_rename_generator(ident_index, img_idx)
-            res = cropp_rename_img(img_path, src_path, face_detector)
+            res_img_name = img_rename_generator(ident_index, img_idx)
+            res = cropp_rename_img(img_path, res_img_name, face_detector)
             if res is not None:
                 no_detections.append(res)
                 continue
@@ -187,9 +187,9 @@ def iteration_only_copy(imgs_paths):
         print("IDENT processing  ", ident_index)
         img_idx = 1
         for img_path in img_paths:
-            dst_name = img_rename_generator(ident_index, img_idx)
+            res_img_name = img_rename_generator(ident_index, img_idx)
             res = cp_rename_img(imgs_path, img_path,
-                                result_imgs_path, dst_name)
+                                result_imgs_path, res_img_name)
             img_idx += 1
         ident_index += 1
         if ident_index > total_individuals_db:
