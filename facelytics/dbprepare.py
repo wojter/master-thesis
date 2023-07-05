@@ -23,9 +23,10 @@ def args_inpust():
     parser.add_argument("-n", "--num_identities", default=5000,
                         help="Specify number images to put in DB")
     parser.add_argument("-k", "--num_img_of_identity",
-                        default=12, help="Number of imgs of one identity")
+                        default=11, help="Number of imgs of one identity")
     parser.add_argument("-t", "--parse-type", default=1,
                         help="Parse type: 0-detection, 1-only copy")
+    parser.add_argument("-s", "--index_start", default=1)
     return parser.parse_args()
 
 
@@ -130,7 +131,8 @@ def filter_cropp_rename_imgs(ident, ident_uniq, tot_ident_in_db, tot_imgs_of_ide
 def generate_imgs_list(identities, ident_count):
     start = time.time()
     ident_count = ident_count.drop(ident_count.index[ident_count["count"]
-                                                     < min_images_of_person+7])
+                                                     < min_images_of_person+9])
+    print(ident_count)
     img_paths = {}
     set_counts = set(ident_count['identity'])
     for idx, row in identities.iterrows():
@@ -156,8 +158,12 @@ def generate_imgs_list(identities, ident_count):
 def iterate_detection(imgs_paths, face_detector):
     ident_index = 1
     no_detections = []
+    ident_skiped = 0
     start_detections = time.time()
     for key, img_paths in imgs_paths.items():
+        if index_start > ident_index:
+            ident_index += 1
+            continue
         print("---------------------------\nIDENT processing  ", ident_index)
         img_idx = 1
         start = time.time()
@@ -171,13 +177,17 @@ def iterate_detection(imgs_paths, face_detector):
                 img_idx += 1
                 if img_idx > min_images_of_person:
                     break
-        ident_index += 1
-        if ident_index > total_individuals_db:
+        if img_idx <= min_images_of_person:
+            ident_skiped += 1
+        else:
+            ident_index += 1
+        if ident_index > total_individuals_db + index_start:
             break
         print(ident_index, " processed in ", time.time()-start)
     print("-----------\nTotal time processing ",
           time.time() - start_detections)
     print("No detection list: ", res)
+    print("--------------\nIdent skipped: ", ident_skiped)
 
 
 def iteration_only_copy(imgs_paths):
@@ -202,15 +212,23 @@ if __name__ == "__main__":
     args = args_inpust()
     min_images_of_person = int(args.num_img_of_identity)
     total_individuals_db = int(args.num_identities)
+    index_start = int(args.index_start)
     parse_type = int(args.parse_type)
 
     identities = load_identities_list()
     ident_count = parse_ident_list(identities)
     img_paths = generate_imgs_list(identities, ident_count)
-    print(type(img_paths))
+
+    if not os.path.isdir(result_imgs_path):
+        os.mkdir(result_imgs_path)
+
 
     if parse_type == 0:
         face_detector = get_face_detector("mtcnn")
         iterate_detection(img_paths, face_detector)
     elif parse_type == 1:
         iteration_only_copy(img_paths)
+# TODO
+ # refactor cp functions to take folders as parameters
+ # add arg to select face detedtor
+ # split db prepare to parts ex 1 - 50
