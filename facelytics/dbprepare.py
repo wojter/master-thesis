@@ -27,6 +27,7 @@ def args_inpust():
     parser.add_argument("-t", "--parse-type", default=1,
                         help="Parse type: 0-detection, 1-only copy")
     parser.add_argument("-s", "--index_start", default=1)
+    parser.add_argument("-a", "--index_skip", default=0)
     return parser.parse_args()
 
 
@@ -155,7 +156,7 @@ def generate_imgs_list(identities, ident_count):
     return img_paths
 
 
-def iterate_detection(imgs_paths, face_detector):
+def iterate_detection(imgs_paths, face_detector ,index_skip):
     ident_index = 1
     no_detections = []
     ident_skiped = 0
@@ -163,6 +164,9 @@ def iterate_detection(imgs_paths, face_detector):
     for key, img_paths in imgs_paths.items():
         if index_start > ident_index:
             ident_index += 1
+            continue
+        if index_skip > 0:
+            index_skip -= 1
             continue
         print("---------------------------\nIDENT processing  ", ident_index)
         img_idx = 1
@@ -181,7 +185,7 @@ def iterate_detection(imgs_paths, face_detector):
             ident_skiped += 1
         else:
             ident_index += 1
-        if ident_index > total_individuals_db + index_start:
+        if ident_index > total_individuals_db + index_start - 1:
             break
         print(ident_index, " processed in ", time.time()-start)
     print("-----------\nTotal time processing ",
@@ -212,8 +216,9 @@ if __name__ == "__main__":
     args = args_inpust()
     min_images_of_person = int(args.num_img_of_identity)
     total_individuals_db = int(args.num_identities)
-    index_start = int(args.index_start)
     parse_type = int(args.parse_type)
+    index_start = int(args.index_start)    
+    index_skip = int(args.index_skip)
 
     identities = load_identities_list()
     ident_count = parse_ident_list(identities)
@@ -225,7 +230,7 @@ if __name__ == "__main__":
 
     if parse_type == 0:
         face_detector = get_face_detector("mtcnn")
-        iterate_detection(img_paths, face_detector)
+        iterate_detection(img_paths, face_detector, index_skip)
     elif parse_type == 1:
         iteration_only_copy(img_paths)
 # TODO
