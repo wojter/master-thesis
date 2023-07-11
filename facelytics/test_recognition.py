@@ -59,10 +59,11 @@ if __name__ == "__main__":
     start_recognition_time = time.time()
     threshold = distance.findThreshold(model_name, "cosine")
 
-    for k in range(1, 11):
+    for k in range(1, num_ident + 1):
+        print("ident ", k)
         person_ident = []
-        for i in range(1, 12):
-            if i <= 3:
+        for i in range(1, num_img_of_ident + 1):
+            if i <= num_img_as_ref:
                 res = represent(os.path.join(db_recognition_path, name_generator(
                     1, i)), model_name=model_name, detector_backend="skip")
                 embedding = res[0]["embedding"]
@@ -74,13 +75,15 @@ if __name__ == "__main__":
                 res = represent(os.path.join(db_recognition_path, name_generator(
                     k, i)), model_name=model_name, detector_backend="skip")
                 embedding = res[0]["embedding"]
-                for j in range(3):
+                for j in range(num_img_as_ref):
                     # print(embedding)
                     # print(person_ident)
                     dist = distance.findCosineDistance(
                         person_ident[j], embedding)
                     if dist < threshold:
-                        print("img", i, "match", j, "\tdist", dist)
+                        pass
+                        # print("img", i, "match", j, "\tdist", dist)
                     else:
-                        print("no_match")
+                        print(k, "img", i, "match", j,
+                              "\tdist", dist, "no_match")
     print("Total time", time.time() - start_recognition_time)
