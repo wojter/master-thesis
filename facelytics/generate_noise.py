@@ -68,22 +68,50 @@ def gaussian_blur_generator(img, s_dev=1):
     return img_w_blur
 
 
+def show_noise_examples(file_path, img_name):
+    img = skimage.io.imread(os.path.join(db_recognition_path, "00001_01.jpg"))
+
+    i = 0
+    for s_dev in np.arange(0, 5, 0.5):
+        plt.suptitle("Gaussian blur", fontsize=18, y=0.95)
+        plt.subplot(2, 5, 1 + i)
+        plt.imshow(gaussian_blur_generator(img, s_dev))
+        plt.title(s_dev)
+        i += 1
+    plt.show()
+
+    i = 0
+    for var in np.arange(0, 1, 0.1):
+        plt.suptitle("Gaussian noise", fontsize=18, y=0.95)
+        plt.subplot(2, 5, 1 + i)
+        plt.imshow(gaussian_noise_generator(img, var ** 2))
+        plt.title(var)
+        i += 1
+    plt.show()
+    plt.close()
+
+    i = 0
+    for var in np.arange(0.01, 0.2, 0.02):
+        plt.suptitle("Salt vs pepper noise", fontsize=18, y=0.95)
+        plt.subplot(2, 5, 1 + i)
+        plt.imshow(salt_vs_pepper_noise_generator(img, amount=var))
+        plt.title(var)
+        i += 1
+    plt.show()
+
+    i = 0
+    for var in np.arange(0, 2, 1):
+        plt.suptitle("Poisson noise", fontsize=18, y=0.95)
+        plt.subplot(2, 5, 1 + i)
+        plt.imshow(poisson_nosie_generator(img))
+        plt.title(var)
+        i += 1
+    plt.show()
+
+
 if __name__ == "__main__":
     args = args_inpust()
     source_dir, result_dir, num_img_as_ref, num_img_of_ident, num_ident, selected_noise = args_parser(
         args)
     if selected_noise not in noise_types:
         raise ValueError("This noise is not implemented")
-
-    img = skimage.io.imread(os.path.join(db_recognition_path, "00001_01.jpg"))
-
-    plt.suptitle("Noise img", fontsize=18, y=0.95)
-
-    i = 0
-    for s_dev in np.arange(0, 4, 0.5):
-        plt.subplot(251+i)
-        plt.imshow(gaussian_blur_generator(img, s_dev))
-        plt.title(s_dev)
-        i += 1
-
-    plt.show()
