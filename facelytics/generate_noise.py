@@ -148,8 +148,8 @@ if __name__ == "__main__":
         print("GENERATE GAUSSIAN NOISE\n")
         for var in np.arange(0.1, 1.1, 0.1):
             print("generate gaussian noise, standard deviation:", var)
-            result_dir = create_dest_dir(selected_noise, var)
+            result_dir = create_dest_dir("gaussian", var)
             for img in tqdm(list_imgs):
-                result_img = gaussian_noise_generator(read_img(img))
+                result_img = gaussian_noise_generator(read_img(img), var=var)
                 write_img(result_img, img, result_dir)
-            
+
