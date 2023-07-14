@@ -6,8 +6,6 @@ import skimage
 
 import argparse
 
-db_recognition_path = "CelebA\img_db_recognition"
-
 noise_types = {
     "gaussian",
     "salt_vs_pepper",
@@ -69,7 +67,7 @@ def gaussian_blur_generator(img, s_dev=1):
 
 
 def show_noise_examples(file_path, img_name):
-    img = skimage.io.imread(os.path.join(db_recognition_path, "00001_01.jpg"))
+    img = skimage.io.imread(os.path.join(file_path, img_name))
 
     i = 0
     for s_dev in np.arange(0, 5, 0.5):
