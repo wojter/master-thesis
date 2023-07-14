@@ -1,10 +1,9 @@
-import numpy as np
 import os
-from matplotlib import pyplot as plt
-
-import skimage
-
 import argparse
+
+import numpy as np
+from matplotlib import pyplot as plt
+import skimage
 
 noise_types = {
     "gaussian",
@@ -14,34 +13,21 @@ noise_types = {
     "gaussian_blur"
 }
 
-source_db_path = "CelebA/img_prepared"
-
 
 def args_inpust():
     parser = argparse.ArgumentParser(
         description="Add noise to photos in dir")
-    parser.add_argument("-n", "--num_identities", default=5000,
-                        help="Specify number images to put in DB")
-    parser.add_argument("-k", "--num_img_of_identity",
-                        default=11, help="Number of imgs of one identity")
-    parser.add_argument("-l", "--num_img_identity_as_ref",
-                        default=3, help="Number of imgs as reference, unchanged")
-    parser.add_argument("-t", "--noise_type", default="gaussian_blur",
+    parser.add_argument("-t", "--noise_type", default=None,
                         help="Specify noise type: gaussian, salt_vs_pepper, poisson, gaussian_blur")
     parser.add_argument("-d", "--source_dir_path",
-                        default="CelebA\db_recognition")
-    parser.add_argument("-r", "--result_dir_path", default="img_db")
+                        default="CelebA\img_db_recognition")
     return parser.parse_args()
 
 
 def args_parser(args):
     source_dir = args.source_dir_path
-    result_dir = args.result_dir_path
-    num_img_as_ref = int(args.num_img_identity_as_ref)
-    num_img_of_ident = int(args.num_img_of_identity)
-    num_ident = int(args.num_identities)
     selected_noise = args.noise_type
-    return source_dir, result_dir, num_img_as_ref, num_img_of_ident, num_ident, selected_noise
+    return source_dir, selected_noise
 
 
 def gaussian_noise_generator(img, var=0.01, mean=0):
@@ -139,18 +125,23 @@ def create_dest_dir(selected_noise_type, param=None):
         os.mkdir(dest_path)
     return dest_path
 
+
 if __name__ == "__main__":
+    global source_db_path
+
     args = args_inpust()
-    source_dir, result_dir, num_img_as_ref, num_img_of_ident, num_ident, selected_noise = args_parser(
+    source_dir, selected_noise = args_parser(
         args)
-    if selected_noise not in noise_types:
+    source_db_path = source_dir
+
+    if selected_noise not in noise_types and selected_noise is not None:
         raise ValueError("This noise is not implemented")
 
-    list_imgs = get_list_all_img("CelebA/img_db_recognition")
+    list_imgs = get_list_all_img(source_db_path)
 
     if selected_noise == "gaussian":
         for var in np.arange(0.5, 5.5, 0.5):
             result_dir = create_dest_dir(selected_noise, var)
             for img in list_imgs:
                 result_img = gaussian_noise_generator(read_img(img))
-                write_img(result_img, img,)
+                write_img(result_img, img, result_dir)
