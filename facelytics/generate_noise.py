@@ -81,7 +81,7 @@ def show_noise_examples(file_path, img_name):
     plt.close()
 
     i = 0
-    for var in np.arange(0.01, 0.2, 0.02):
+    for var in np.arange(0.02, 0.2, 0.02):
         plt.suptitle("Salt vs pepper noise", fontsize=18, y=0.95)
         plt.subplot(2, 5, 1 + i)
         plt.imshow(salt_vs_pepper_noise_generator(img, amount=var))
@@ -145,11 +145,39 @@ if __name__ == "__main__":
 
     if selected_noise in ["gaussian", None]:
         print('-' * 80)
-        print("GENERATE GAUSSIAN NOISE\n")
+        print("generate GAUSSIAN noise\n")
         for var in np.arange(0.1, 1.1, 0.1):
             print("generate gaussian noise, standard deviation:", var)
             result_dir = create_dest_dir("gaussian", var)
             for img in tqdm(list_imgs):
                 result_img = gaussian_noise_generator(read_img(img), var=var)
+                write_img(result_img, img, result_dir)
+
+    if selected_noise in ["s_v_p", None]:
+        print('-' * 80)
+        print("generate Salt_vs_Pepper noise\n")
+        for var in np.arange(0.02, 0.22, 0.02):
+            print("generate s_p noise, amount:", var)
+            result_dir = create_dest_dir("s_v_", var)
+            for img in tqdm(list_imgs):
+                result_img = salt_vs_pepper_noise_generator(read_img(img), amount=var)
+                write_img(result_img, img, result_dir)
+
+    if selected_noise in ["poisson", None]:
+        print('-' * 80)
+        print("generate POISSON noise\n")
+        result_dir = create_dest_dir("poisson")
+        for img in tqdm(list_imgs):
+            result_img = poisson_nosie_generator(read_img(img))
+            write_img(result_img, img, result_dir)
+
+    if selected_noise in ["gaussian_blur", None]:
+        print('-' * 80)
+        print("generate GAUSSIAN BLUR\n")
+        for var in np.arange(0.5, 5.5, 0.5):
+            print("generate gaussian blur, standard deviation:", var)
+            result_dir = create_dest_dir("s_v_", var)
+            for img in tqdm(list_imgs):
+                result_img = gaussian_blur_generator(read_img(img), s_dev=var)
                 write_img(result_img, img, result_dir)
 
