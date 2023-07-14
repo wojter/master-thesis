@@ -34,10 +34,10 @@ def args_parser(args):
     return source_dir, selected_noise
 
 
-def gaussian_noise_generator(img, var=0.01, mean=0):
+def gaussian_noise_generator(img, s_dev=0.1, mean=0):
     # variande = standard deviationt ** 2
     img_w_noise = skimage.util.random_noise(
-        img, mode="gaussian", mean=mean, var=var)
+        img, mode="gaussian", mean=mean, var=s_dev ** 2)
     return img_w_noise
 
 
@@ -71,21 +71,21 @@ def show_noise_examples(file_path, img_name):
     plt.show()
 
     i = 0
-    for var in np.arange(0, 1, 0.1):
+    for s_dev in np.arange(0, 1, 0.1):
         plt.suptitle("Gaussian noise", fontsize=18, y=0.95)
         plt.subplot(2, 5, 1 + i)
-        plt.imshow(gaussian_noise_generator(img, var ** 2))
-        plt.title(var)
+        plt.imshow(gaussian_noise_generator(img, s_dev))
+        plt.title(s_dev)
         i += 1
     plt.show()
     plt.close()
 
     i = 0
-    for var in np.arange(0.02, 0.2, 0.02):
+    for amount in np.arange(0.02, 0.2, 0.02):
         plt.suptitle("Salt vs pepper noise", fontsize=18, y=0.95)
         plt.subplot(2, 5, 1 + i)
-        plt.imshow(salt_vs_pepper_noise_generator(img, amount=var))
-        plt.title(var)
+        plt.imshow(salt_vs_pepper_noise_generator(img, amount=amount))
+        plt.title(amount)
         i += 1
     plt.show()
 
@@ -146,11 +146,11 @@ if __name__ == "__main__":
     if selected_noise in ["gaussian", None]:
         print('-' * 80)
         print("generate GAUSSIAN noise\n")
-        for var in np.arange(0.1, 1.1, 0.1):
-            print("generate gaussian noise, standard deviation:", var)
-            result_dir = create_dest_dir("gaussian", var)
+        for s_dev in np.arange(0.1, 1.1, 0.1):
+            print("generate gaussian noise, standard deviation:", s_dev)
+            result_dir = create_dest_dir("gaussian", s_dev)
             for img in tqdm(list_imgs):
-                result_img = gaussian_noise_generator(read_img(img), var=var)
+                result_img = gaussian_noise_generator(read_img(img), var=s_dev,)
                 write_img(result_img, img, result_dir)
 
     if selected_noise in ["s_v_p", None]:
@@ -174,10 +174,10 @@ if __name__ == "__main__":
     if selected_noise in ["gaussian_blur", None]:
         print('-' * 80)
         print("generate GAUSSIAN BLUR\n")
-        for var in np.arange(0.5, 5.5, 0.5):
-            print("generate gaussian blur, standard deviation:", var)
-            result_dir = create_dest_dir("s_v_", var)
+        for s_dev in np.arange(0.5, 5.5, 0.5):
+            print("generate gaussian blur, standard deviation:", s_dev)
+            result_dir = create_dest_dir("s_v_", s_dev)
             for img in tqdm(list_imgs):
-                result_img = gaussian_blur_generator(read_img(img), s_dev=var)
+                result_img = gaussian_blur_generator(read_img(img), s_dev=s_dev)
                 write_img(result_img, img, result_dir)
 
