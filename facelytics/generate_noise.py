@@ -5,6 +5,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 import skimage
 
+skimage.io.use_plugin("pil")
+
 noise_types = {
     "gaussian",
     "s_v_p",
