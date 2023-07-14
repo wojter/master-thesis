@@ -135,7 +135,7 @@ def generate_imgs_list(identities, ident_count):
                                                      < min_images_of_person+9])
     print(ident_count)
     img_paths = {}
-    set_counts = set(ident_count['identity'])
+    set_counts = set(ident_count['identity'])  # set of selected identities id
     for idx, row in identities.iterrows():
         if row['identity'] in set_counts:
             if row['identity'] in img_paths:
@@ -157,6 +157,7 @@ def generate_imgs_list(identities, ident_count):
 
 
 def iterate_detection(imgs_paths, face_detector ,index_skip):
+    '''Detect faces and crop_rename_copy img'''
     ident_index = 1
     no_detections = []
     ident_skiped = 0
@@ -166,7 +167,7 @@ def iterate_detection(imgs_paths, face_detector ,index_skip):
             ident_index += 1
             continue
         if index_skip > 0:
-            index_skip -= 1
+            index_skip -= 1  # to skip iterations of images taken before
             continue
         print("---------------------------\nIDENT processing  ", ident_index)
         img_idx = 1
@@ -195,6 +196,7 @@ def iterate_detection(imgs_paths, face_detector ,index_skip):
 
 
 def iteration_only_copy(imgs_paths):
+    '''Iterates throught identities and copy_rename images of identity'''
     ident_index = 1
     start_copy = time.time()
     for key, img_paths in imgs_paths.items():

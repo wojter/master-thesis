@@ -150,7 +150,8 @@ if __name__ == "__main__":
             print("generate gaussian noise, standard deviation:", s_dev)
             result_dir = create_dest_dir("gaussian", s_dev)
             for img in tqdm(list_imgs):
-                result_img = gaussian_noise_generator(read_img(img), var=s_dev,)
+                result_img = gaussian_noise_generator(
+                    read_img(img), var=s_dev,)
                 write_img(result_img, img, result_dir)
 
     if selected_noise in ["s_v_p", None]:
@@ -160,7 +161,8 @@ if __name__ == "__main__":
             print("generate s_p noise, amount:", var)
             result_dir = create_dest_dir("s_v_", var)
             for img in tqdm(list_imgs):
-                result_img = salt_vs_pepper_noise_generator(read_img(img), amount=var)
+                result_img = salt_vs_pepper_noise_generator(
+                    read_img(img), amount=var)
                 write_img(result_img, img, result_dir)
 
     if selected_noise in ["poisson", None]:
@@ -178,6 +180,6 @@ if __name__ == "__main__":
             print("generate gaussian blur, standard deviation:", s_dev)
             result_dir = create_dest_dir("s_v_", s_dev)
             for img in tqdm(list_imgs):
-                result_img = gaussian_blur_generator(read_img(img), s_dev=s_dev)
+                result_img = gaussian_blur_generator(
+                    read_img(img), s_dev=s_dev)
                 write_img(result_img, img, result_dir)
-
