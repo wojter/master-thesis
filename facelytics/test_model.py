@@ -112,10 +112,13 @@ def main():
                 )
                 dist_rounded = round(dist, 4)
                 positives_distances.append(dist_rounded)
-
-    df = pd.DataFrame(positives_distances)
-    print(df.mean())
-    print(df.std())
+    df1 = pd.DataFrame(positives_distances)
+    pos_dist = pd.DataFrame(positives_distances, columns = ["distance"])
+    pos_dist["decision"] = "Yes"
+    print("Mean post: ", df1.mean())
+    print("Std pos: ", df1.std())
+    print(pos_dist[pos_dist["decision"] == "Yes"].distance.mean())
+    print(pos_dist[pos_dist["decision"] == "Yes"].distance.std())
 
     for ident in range(1, NUM_IDENT_TO_TEST + 1):
         for i in range(1, 4):
@@ -146,12 +149,29 @@ def main():
                 negatives_distances.append(dist_rounded)
 
     df2 = pd.DataFrame(negatives_distances)
-    print(df2.mean())
-    print(df2.std())
+    neg_dist = pd.DataFrame(negatives_distances, columns=["distance"])
+    neg_dist["decision"] = "No"
 
+    print("Mean neg: ", df2.mean())
+    print("Std neg: ", df2.std())
+    print(neg_dist[neg_dist["decision"] == "No"].distance.mean())
+    print(neg_dist[neg_dist["decision"] == "No"].distance.std())
+
+    df = pd.concat([pos_dist, neg_dist]).reset_index(drop = True)
+    tp_mean = round(df[df.decision == "Yes"].distance.mean(), 4)
+    tp_std = round(df[df.decision == "Yes"].distance.std(), 4)
+    fp_mean = round(df[df.decision == "No"].distance.mean(), 4)
+    fp_std = round(df[df.decision == "No"].distance.std(), 4)
+
+
+    print(tp_mean, tp_std, fp_mean, fp_std)
+    
+    # df1.plot.kde()
     # plt.figure()
-    df.plot.kde()
     df2.plot.kde()
+
+    # df[df.decision == "Yes"].distance.plot.kde()
+    # df[df.decision == "No"].distance.plot.kde()
     plt.show()
 
 if __name__ == "__main__":
