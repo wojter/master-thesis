@@ -118,14 +118,19 @@ def main():
                     img_obj[0][0], model_name=selected_model, detector_backend="skip"
                 )
                 embedding = res[0]["embedding"]
-                dist = distance.findEuclideanDistance(
+                dist_cosine = distance.findCosineDistance(embedding_org, embedding)
+                dist = distance.findEuclideanDistance(embedding_org, embedding)
+                dist_l2 = distance.findEuclideanDistance(
                     distance.l2_normalize(embedding_org),
                     distance.l2_normalize(embedding),
                 )
+                
+                dist_cosine_rounded = round(dist_cosine, 5)
                 dist_rounded = round(dist, 5)
-                positives_distances.append(dist_rounded)
-    df1 = pd.DataFrame(positives_distances)
-    pos_dist = pd.DataFrame(positives_distances, columns=["distance"])
+                dist_rounded_l2 = round(dist_l2, 5)
+                positives_distances.append([dist_cosine_rounded, dist_rounded, dist_rounded_l2])
+
+    pos_dist = pd.DataFrame(positives_distances, columns=["distance_cos", "distance_euc", "distance"])
     pos_dist["decision"] = "Yes"
 
     for ident in range(1, NUM_IDENT_TO_TEST + 1):
@@ -149,19 +154,26 @@ def main():
                     img_obj[0][0], model_name=selected_model, detector_backend="skip"
                 )
                 embedding = res[0]["embedding"]
-                dist = distance.findEuclideanDistance(
+                dist_cosine = distance.findCosineDistance(embedding_org, embedding)
+                dist = distance.findEuclideanDistance(embedding_org, embedding)
+                dist_l2 = distance.findEuclideanDistance(
                     distance.l2_normalize(embedding_org),
                     distance.l2_normalize(embedding),
                 )
+                
+                dist_cosine_rounded = round(dist_cosine, 5)
                 dist_rounded = round(dist, 5)
-                negatives_distances.append(dist_rounded)
+                dist_rounded_l2 = round(dist_l2, 5)
+                negatives_distances.append([dist_cosine_rounded, dist_rounded, dist_rounded_l2])
 
-    df2 = pd.DataFrame(negatives_distances)
-    neg_dist = pd.DataFrame(negatives_distances, columns=["distance"])
+    neg_dist = pd.DataFrame(negatives_distances, columns=["distance_cos", "distance_euc", "distance"])
     neg_dist["decision"] = "No"
 
     df = pd.concat([pos_dist, neg_dist]).reset_index(drop=True)
 
+    df[df.decision == "Yes"].distance.plot.kde()
+    df[df.decision == "No"].distance.plot.kde()
+    plt.show()
     result_file_name = "result_test_" + selected_model
     df.to_csv(result_file_name)
 
