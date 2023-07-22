@@ -4,14 +4,14 @@ import random
 from tqdm import tqdm
 import argparse
 
+import pandas as pd
 from deepface.DeepFace import represent, build_model
 from deepface.commons import distance, functions
 
-import matplotlib.pyplot as plt
-from deepface import DeepFace
-import pandas as pd
-
 from common import img_name_generator
+
+NUM_NEGATIVE_IDENT_ = 6
+NUM_RESULT_DECIMAL_PLACES = 6
 
 db_identity = os.path.join("CelebA", "img_db")
 db_to_test = os.path.join("CelebA", "img_prepared")
@@ -28,30 +28,14 @@ models = {
     "SFace",
 }
 
-NUM_IDENT_TO_TEST = 2
-NUM_NEGATIVE_IDENT_ = 6
-selected_model = "Facenet"
 
-positives_distances = []
-negatives_distances = []
-
-
-def args_inpust():
+def args_input():
     parser = argparse.ArgumentParser(description="Prepare img db from CelebA dataset")
     parser.add_argument(
         "-n",
         "--num_identities_to_test",
         default=1000,
-        help="Specify number identities in db",
-    )
-    parser.add_argument(
-        "-k", "--num_img_of_identity", default=11, help="Number of imgs of one identity"
-    )
-    parser.add_argument(
-        "-l",
-        "--num_img_identity_as_ref",
-        default=3,
-        help="Number of imgs as reference, unchanged",
+        help="Specify number identities in db to test",
     )
     parser.add_argument(
         "-m",
@@ -65,14 +49,12 @@ def args_inpust():
 
 def args_parser(args):
     model_name = args.model_name
-    num_img_as_ref = int(args.num_img_identity_as_ref)
-    num_img_of_ident = int(args.num_img_of_identity)
     num_ident = int(args.num_identities_to_test)
-    return model_name, num_img_as_ref, num_img_of_ident, num_ident
+    return model_name, num_ident
 
 
 def generat_pair():
-    l = random.randint(1, NUM_IDENT_TO_TEST)
+    l = random.randint(1, num_ident_to_test)
     m = random.randint(4, 9)
     return l, m
 
@@ -96,8 +78,8 @@ def main():
     model = build_model(selected_model)
     target_size = functions.find_target_size(model_name=selected_model)
 
-    print("Analizing possitive pairs")
-    for ident in tqdm(range(1, NUM_IDENT_TO_TEST + 1)):
+    print("Analizing positive pairs")
+    for ident in tqdm(range(1, num_ident_to_test + 1)):
         for i in range(1, 4):
             img_obj = functions.extract_faces(
                 os.path.join(db_identity, img_name_generator(ident, i)),
@@ -124,16 +106,21 @@ def main():
                     distance.l2_normalize(embedding_org),
                     distance.l2_normalize(embedding),
                 )
-                
-                dist_cosine_rounded = round(dist_cosine, 5)
-                dist_rounded = round(dist, 5)
-                dist_rounded_l2 = round(dist_l2, 5)
-                positives_distances.append([dist_cosine_rounded, dist_rounded, dist_rounded_l2])
 
-    pos_dist = pd.DataFrame(positives_distances, columns=["distance_cos", "distance_euc", "distance"])
+                dist_cosine_rounded = round(dist_cosine, NUM_RESULT_DECIMAL_PLACES)
+                dist_rounded = round(dist, NUM_RESULT_DECIMAL_PLACES)
+                dist_rounded_l2 = round(dist_l2, NUM_RESULT_DECIMAL_PLACES)
+                positives_distances.append(
+                    [dist_cosine_rounded, dist_rounded, dist_rounded_l2]
+                )
+
+    pos_dist = pd.DataFrame(
+        positives_distances, columns=["distance_cos", "distance_euc", "distance"]
+    )
     pos_dist["decision"] = "Yes"
 
-    for ident in range(1, NUM_IDENT_TO_TEST + 1):
+    print("Analizing negative pairs")
+    for ident in tqdm(range(1, num_ident_to_test + 1)):
         for i in range(1, 4):
             img_obj = functions.extract_faces(
                 os.path.join(db_identity, img_name_generator(ident, i)),
@@ -160,23 +147,29 @@ def main():
                     distance.l2_normalize(embedding_org),
                     distance.l2_normalize(embedding),
                 )
-                
-                dist_cosine_rounded = round(dist_cosine, 5)
-                dist_rounded = round(dist, 5)
-                dist_rounded_l2 = round(dist_l2, 5)
-                negatives_distances.append([dist_cosine_rounded, dist_rounded, dist_rounded_l2])
 
-    neg_dist = pd.DataFrame(negatives_distances, columns=["distance_cos", "distance_euc", "distance"])
+                dist_cosine_rounded = round(dist_cosine, NUM_RESULT_DECIMAL_PLACES)
+                dist_rounded = round(dist, NUM_RESULT_DECIMAL_PLACES)
+                dist_rounded_l2 = round(dist_l2, NUM_RESULT_DECIMAL_PLACES)
+                negatives_distances.append(
+                    [dist_cosine_rounded, dist_rounded, dist_rounded_l2]
+                )
+
+    neg_dist = pd.DataFrame(
+        negatives_distances, columns=["distance_cos", "distance_euc", "distance"]
+    )
     neg_dist["decision"] = "No"
 
     df = pd.concat([pos_dist, neg_dist]).reset_index(drop=True)
 
-    df[df.decision == "Yes"].distance.plot.kde()
-    df[df.decision == "No"].distance.plot.kde()
-    plt.show()
     result_file_name = "result_test_" + selected_model
     df.to_csv(result_file_name)
 
 
 if __name__ == "__main__":
+    args = args_input()
+    selected_model, num_ident_to_test = args_parser(args)
+
+    positives_distances = []
+    negatives_distances = []
     main()
