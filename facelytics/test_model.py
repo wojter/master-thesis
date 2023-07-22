@@ -13,9 +13,6 @@ from common import img_name_generator
 NUM_NEGATIVE_IDENT_ = 6
 NUM_RESULT_DECIMAL_PLACES = 6
 
-db_identity = os.path.join("CelebA", "img_db")
-db_to_test = os.path.join("CelebA", "img_prepared")
-
 models = {
     "VGG-Face",
     "OpenFace",
@@ -44,13 +41,24 @@ def args_input():
         help="""Select one of recognition models: 
                         VGG-Face, OpenFace, Facenet, Facenet512, DeepFace, DeepID, Dlib, ArcFace, SFace""",
     )
+    parser.add_argument(
+        "-f",
+        "--test_db_dir",
+        default="img_prepared",
+        help="""Specify path to dir with imgs to test""",
+    )
     return parser.parse_args()
 
 
 def args_parser(args):
     model_name = args.model_name
+    if model_name not in models:
+        raise ValueError("Incorrect model name")
     num_ident = int(args.num_identities_to_test)
-    return model_name, num_ident
+    if num_ident < 2:
+        raise ValueError("To small number of img to test")
+    db_test_path = args.test_db_dir
+    return model_name, num_ident, db_test_path
 
 
 def generat_pair():
@@ -74,7 +82,20 @@ def generate_negative_pair(j, k):
     return negative_names
 
 
-def main():
+if __name__ == "__main__":
+    args = args_input()
+    selected_model, num_ident_to_test, db_test_path = args_parser(args)
+
+    db_to_test = os.path.join("CelebA", db_test_path)
+    db_identity = os.path.join("CelebA", "img_db")
+    if db_test_path == "img_prepared":
+        noise_and_value = ""
+    else:
+        noise_and_value = db_test_path.replace("db_imgs", "")
+
+    positives_distances = []
+    negatives_distances = []
+
     model = build_model(selected_model)
     target_size = functions.find_target_size(model_name=selected_model)
 
@@ -119,6 +140,9 @@ def main():
     )
     pos_dist["decision"] = "Yes"
 
+    print("-" * 40)
+    print("Selected to test: ", noise_and_value)
+
     print("Analizing negative pairs")
     for ident in tqdm(range(1, num_ident_to_test + 1)):
         for i in range(1, 4):
@@ -162,14 +186,5 @@ def main():
 
     df = pd.concat([pos_dist, neg_dist]).reset_index(drop=True)
 
-    result_file_name = "result_test_" + selected_model
+    result_file_name = "result_" + selected_model + noise_and_value + ".csv"
     df.to_csv(result_file_name)
-
-
-if __name__ == "__main__":
-    args = args_input()
-    selected_model, num_ident_to_test = args_parser(args)
-
-    positives_distances = []
-    negatives_distances = []
-    main()
