@@ -9,22 +9,18 @@ from tqdm import tqdm
 
 skimage.io.use_plugin("pil")
 
-noise_types = {
-    "gaussian",
-    "s_v_p",
-    "poisson",
-    "speckle",
-    "gaussian_blur"
-}
+noise_types = {"gaussian", "s_v_p", "poisson", "speckle", "gaussian_blur"}
 
 
 def args_inpust():
-    parser = argparse.ArgumentParser(
-        description="Add noise to photos in dir")
-    parser.add_argument("-t", "--noise_type", default=None,
-                        help="Specify noise type: gaussian, salt_vs_pepper, poisson, gaussian_blur")
-    parser.add_argument("-d", "--source_dir_path",
-                        default="CelebA\img_db_recognition")
+    parser = argparse.ArgumentParser(description="Add noise to photos in dir")
+    parser.add_argument(
+        "-t",
+        "--noise_type",
+        default=None,
+        help="Specify noise type: gaussian, salt_vs_pepper, poisson, gaussian_blur",
+    )
+    parser.add_argument("-d", "--source_dir_path", default="CelebA/img_db_recognition")
     return parser.parse_args()
 
 
@@ -37,13 +33,15 @@ def args_parser(args):
 def gaussian_noise_generator(img, s_dev=0.1, mean=0):
     # variande = standard deviationt ** 2
     img_w_noise = skimage.util.random_noise(
-        img, mode="gaussian", mean=mean, var=s_dev ** 2)
+        img, mode="gaussian", mean=mean, var=s_dev**2
+    )
     return img_w_noise
 
 
 def salt_vs_pepper_noise_generator(img, amount=0.05, svp=0.5):
     img_w_noise = skimage.util.random_noise(
-        img, mode="s&p", amount=amount, salt_vs_pepper=svp)
+        img, mode="s&p", amount=amount, salt_vs_pepper=svp
+    )
     return img_w_noise
 
 
@@ -127,6 +125,7 @@ def create_dest_dir(selected_noise_type, param=None):
         dest_path = dest_path.replace(".", "_")
     if not os.path.exists(dest_path):
         os.mkdir(dest_path)
+    dest_path = os.path.join("CelebA", dest_path)
     return dest_path
 
 
@@ -134,8 +133,7 @@ if __name__ == "__main__":
     global source_db_path
 
     args = args_inpust()
-    source_dir, selected_noise = args_parser(
-        args)
+    source_dir, selected_noise = args_parser(args)
     source_db_path = source_dir
 
     if selected_noise not in noise_types and selected_noise is not None:
@@ -144,29 +142,30 @@ if __name__ == "__main__":
     list_imgs = get_list_all_img(source_db_path)
 
     if selected_noise in ["gaussian", None]:
-        print('-' * 80)
+        print("-" * 80)
         print("generate GAUSSIAN noise\n")
         for s_dev in np.arange(0.1, 1.1, 0.1):
             print("generate gaussian noise, standard deviation:", s_dev)
             result_dir = create_dest_dir("gaussian", s_dev)
             for img in tqdm(list_imgs):
                 result_img = gaussian_noise_generator(
-                    read_img(img), var=s_dev,)
+                    read_img(img),
+                    s_dev=s_dev,
+                )
                 write_img(result_img, img, result_dir)
 
     if selected_noise in ["s_v_p", None]:
-        print('-' * 80)
+        print("-" * 80)
         print("generate Salt_vs_Pepper noise\n")
         for var in np.arange(0.02, 0.22, 0.02):
             print("generate s_p noise, amount:", var)
             result_dir = create_dest_dir("s_v_", var)
             for img in tqdm(list_imgs):
-                result_img = salt_vs_pepper_noise_generator(
-                    read_img(img), amount=var)
+                result_img = salt_vs_pepper_noise_generator(read_img(img), amount=var)
                 write_img(result_img, img, result_dir)
 
     if selected_noise in ["poisson", None]:
-        print('-' * 80)
+        print("-" * 80)
         print("generate POISSON noise\n")
         result_dir = create_dest_dir("poisson")
         for img in tqdm(list_imgs):
@@ -174,12 +173,11 @@ if __name__ == "__main__":
             write_img(result_img, img, result_dir)
 
     if selected_noise in ["gaussian_blur", None]:
-        print('-' * 80)
+        print("-" * 80)
         print("generate GAUSSIAN BLUR\n")
         for s_dev in np.arange(0.5, 5.5, 0.5):
             print("generate gaussian blur, standard deviation:", s_dev)
             result_dir = create_dest_dir("s_v_", s_dev)
             for img in tqdm(list_imgs):
-                result_img = gaussian_blur_generator(
-                    read_img(img), s_dev=s_dev)
+                result_img = gaussian_blur_generator(read_img(img), s_dev=s_dev)
                 write_img(result_img, img, result_dir)
