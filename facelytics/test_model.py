@@ -81,17 +81,30 @@ def generate_negative_pair(j, k):
                 negative_names.append(negative_name)
     return negative_names
 
+def negative_pairs_generator(negative_pairs_path):
+    negative_pairs = []
+    for ident in range(1, num_ident_to_test + 1):
+        for i in range(1, 4):
+            negative_names = generate_negative_pair(ident, i)
+            negative_pairs.append(negative_names)
+    df = pd.DataFrame(negative_pairs)
+    df.to_csv(negative_pairs_path)
 
 if __name__ == "__main__":
     args = args_input()
     selected_model, num_ident_to_test, db_test_path, num_clean = args_parser(args)
-
+    negative_pairs_path = os.path.join("CelebA", "negative_paris.csv")
     db_to_test = os.path.join("CelebA", db_test_path)
-    db_identity = os.path.join("CelebA", "img_db")
+    db_identity = os.path.join("CelebA", "db-ident")
     if db_test_path == "img_prepared":
         noise_and_value = ""
     else:
         noise_and_value = db_test_path.replace("db_imgs", "")
+
+    if not os.path.exists(negative_pairs_path):
+        negative_pairs_generator(negative_pairs_path)
+    
+    negative_paris = pd.read_csv(negative_pairs_path)
 
     positives_distances = []
     negatives_distances = []
@@ -159,7 +172,8 @@ if __name__ == "__main__":
                 img_obj[0][0], model_name=selected_model, detector_backend="skip"
             )
             embedding_org = res[0]["embedding"]
-            for j in generate_negative_pair(ident, i):
+            idx = (ident - 1) * 3 + (i - 1)
+            for j in negative_paris.iloc[idx].to_list()[1:]:
                 img_obj = functions.extract_faces(
                     os.path.join(db_to_test, j),
                     target_size=target_size,
@@ -190,7 +204,7 @@ if __name__ == "__main__":
 
     df = pd.concat([pos_dist, neg_dist]).reset_index(drop=True)
 
-    result_file_name = "result_" + selected_model + noise_and_value + ".csv"
+    result_file_name = "result_new_" + selected_model + noise_and_value + ".csv"
     if not os.path.exists("results"):
         os.makedirs("results")
     result_file_name = os.path.join("results", result_file_name)
