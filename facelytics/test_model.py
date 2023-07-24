@@ -1,5 +1,4 @@
 import os
-import time
 import random
 from tqdm import tqdm
 import argparse
@@ -8,29 +7,16 @@ import pandas as pd
 from deepface.DeepFace import represent, build_model
 from deepface.commons import distance, functions
 
-# import tensorflow as tf
 import keras.backend as K
 
 cfg = K.tf.compat.v1.ConfigProto()
 cfg.gpu_options.allow_growth = True
 K.set_session(K.tf.compat.v1.Session(config=cfg))
 
-from common import img_name_generator
+from commons import img_name_generator, models
 
 NUM_NEGATIVE_IDENT_ = 6
 NUM_RESULT_DECIMAL_PLACES = 6
-
-models = {
-    "VGG-Face",
-    "OpenFace",
-    "Facenet",
-    "Facenet512",
-    "DeepFace",
-    "DeepID",
-    "Dlib",
-    "ArcFace",
-    "SFace",
-}
 
 
 def args_input():
