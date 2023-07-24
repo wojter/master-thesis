@@ -177,7 +177,7 @@ if __name__ == "__main__":
         print("generate GAUSSIAN BLUR\n")
         for s_dev in np.arange(0.5, 5.5, 0.5):
             print("generate gaussian blur, standard deviation:", s_dev)
-            result_dir = create_dest_dir("s_v_", s_dev)
+            result_dir = create_dest_dir("gaussian_blur", s_dev)
             for img in tqdm(list_imgs):
                 result_img = gaussian_blur_generator(read_img(img), s_dev=s_dev)
                 write_img(result_img, img, result_dir)

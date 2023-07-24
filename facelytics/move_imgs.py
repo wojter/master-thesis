@@ -2,7 +2,7 @@ import shutil
 import os
 from tqdm import tqdm
 
-from common import img_name_generator
+from commons import img_name_generator
 
 
 source_db_path = os.path.join("CelebA", "img_prepared")
@@ -14,7 +14,7 @@ def main():
         raise NotADirectoryError("Source directory not exsist")
 
     if not os.path.isdir(ident_db):
-        os.mkdir(source_db_path)
+        os.mkdir(ident_db)
     
     for i in tqdm(range(1, 1000 + 1)):
         for j in range(1, 3 + 1):

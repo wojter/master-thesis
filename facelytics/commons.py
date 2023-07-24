@@ -1,3 +1,15 @@
+models = {
+    "VGG-Face",
+    "OpenFace",
+    "Facenet",
+    "Facenet512",
+    "DeepFace",
+    "DeepID",
+    "Dlib",
+    "ArcFace",
+    "SFace",
+}
+
 def img_name_generator(ident_idx, img_idx):
     """
     Generate name for images in 00000_00.jpg
