@@ -6,7 +6,7 @@ import time
 
 import cv2
 
-from common import img_name_generator
+from commons import img_name_generator
 
 from deepface.commons import functions
 from deepface.detectors import FaceDetector
