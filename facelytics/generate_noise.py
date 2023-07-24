@@ -20,7 +20,7 @@ def args_inpust():
         default=None,
         help="Specify noise type: gaussian, salt_vs_pepper, poisson, gaussian_blur",
     )
-    parser.add_argument("-d", "--source_dir_path", default="CelebA/img_db_recognition")
+    parser.add_argument("-d", "--source_dir_path", default="CelebA/db-imgs")
     return parser.parse_args()
 
 
@@ -119,9 +119,9 @@ def write_img(img, img_name, dest_path):
 def create_dest_dir(selected_noise_type, param=None):
     dest_path = ""
     if param is None:
-        dest_path = f"db_imgs_{selected_noise_type}"
+        dest_path = f"db-imgs_{selected_noise_type}"
     else:
-        dest_path = f"db_imgs_{selected_noise_type}_{param:.02f}"
+        dest_path = f"db-imgs_{selected_noise_type}_{param:.02f}"
         dest_path = dest_path.replace(".", "_")
     if not os.path.exists(dest_path):
         os.mkdir(dest_path)

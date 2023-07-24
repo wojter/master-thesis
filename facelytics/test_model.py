@@ -37,7 +37,7 @@ def args_input():
     parser.add_argument(
         "-f",
         "--test_db_dir",
-        default="img_prepared",
+        default="db-imgs",
         help="""Specify path to dir with imgs to test""",
     )
     parser.add_argument(
@@ -96,10 +96,10 @@ if __name__ == "__main__":
     negative_pairs_path = os.path.join("CelebA", "negative_paris.csv")
     db_to_test = os.path.join("CelebA", db_test_path)
     db_identity = os.path.join("CelebA", "db-ident")
-    if db_test_path == "img_prepared":
+    if db_test_path == "img_prepared" or db_test_path == "db-imgs":
         noise_and_value = ""
     else:
-        noise_and_value = db_test_path.replace("db_imgs", "")
+        noise_and_value = db_test_path.replace("db-imgs", "")
 
     if not os.path.exists(negative_pairs_path):
         negative_pairs_generator(negative_pairs_path)
@@ -204,7 +204,7 @@ if __name__ == "__main__":
 
     df = pd.concat([pos_dist, neg_dist]).reset_index(drop=True)
 
-    result_file_name = "result_new_" + selected_model + noise_and_value + ".csv"
+    result_file_name = "result_" + selected_model + noise_and_value + ".csv"
     if not os.path.exists("results"):
         os.makedirs("results")
     result_file_name = os.path.join("results", result_file_name)
