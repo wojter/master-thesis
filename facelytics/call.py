@@ -21,6 +21,9 @@ for i in np.arange(0.05, 0.3, 0.05):
         + "{:.2f}".format(i).replace(".", "_")
     )
     try:
+        print("\n\n")
+        print("-" * 80)
+        print("Running: ", command, "\n")
         os.system(command)
     except:
         pass
