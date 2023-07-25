@@ -102,6 +102,7 @@ if __name__ == "__main__":
         noise_and_value = db_test_path.replace("db-imgs", "")
 
     if not os.path.exists(negative_pairs_path):
+        raise FileNotFoundError("No negative file")
         negative_pairs_generator(negative_pairs_path)
     
     negative_paris = pd.read_csv(negative_pairs_path)
