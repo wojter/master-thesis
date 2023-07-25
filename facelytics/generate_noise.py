@@ -123,9 +123,9 @@ def create_dest_dir(selected_noise_type, param=None):
     else:
         dest_path = f"db-imgs_{selected_noise_type}_{param:.02f}"
         dest_path = dest_path.replace(".", "_")
+    dest_path = os.path.join("CelebA", dest_path)
     if not os.path.exists(dest_path):
         os.mkdir(dest_path)
-    dest_path = os.path.join("CelebA", dest_path)
     return dest_path
 
 
@@ -144,7 +144,7 @@ if __name__ == "__main__":
     if selected_noise in ["gaussian", None]:
         print("-" * 80)
         print("generate GAUSSIAN noise\n")
-        for s_dev in np.arange(0.1, 1.1, 0.1):
+        for s_dev in np.arange(0.05, 0.35, 0.05):
             print("generate gaussian noise, standard deviation:", s_dev)
             result_dir = create_dest_dir("gaussian", s_dev)
             for img in tqdm(list_imgs):
