@@ -210,3 +210,4 @@ if __name__ == "__main__":
         os.makedirs("results")
     result_file_name = os.path.join("results", result_file_name)
     df.to_csv(result_file_name)
+    print("TEST END\nFile with results saved")
