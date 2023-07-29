@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 skimage.io.use_plugin("pil")
 
-noise_types = {"gaussian", "s_v_p", "poisson", "speckle", "gaussian_blur"}
+noise_types = {"gaussian", "s_v_p", "poisson", "speckle", "gaussian_blur, exposure_dark, exposure_light"}
 
 
 def args_inpust():
@@ -55,6 +55,11 @@ def gaussian_blur_generator(img, s_dev=1):
     img_w_blur = skimage.filters.gaussian(img, s_dev)
     return img_w_blur
 
+def adjust_gamma_generator(img, gamma=1):
+    # s_dev - standard deviation (default 1)
+    img_adjusted = skimage.exposure.adjust_gamma(img, gamma)
+    return img_adjusted
+
 
 def show_noise_examples(file_path, img_name):
     img = skimage.io.imread(os.path.join(file_path, img_name))
@@ -93,6 +98,24 @@ def show_noise_examples(file_path, img_name):
         plt.subplot(2, 5, 1 + i)
         plt.imshow(poisson_nosie_generator(img))
         plt.title(var)
+        i += 1
+    plt.show()
+
+    i = 0
+    for gamma in np.arange(0.1, 1.1, 0.1):
+        plt.suptitle("exposure lighter", fontsize=18, y=0.95)
+        plt.subplot(2, 5, 1 + i)
+        plt.imshow(adjust_gamma_generator(img, gamma))
+        plt.title(gamma)
+        i += 1
+    plt.show()
+
+    i = 0
+    for gamma in np.arange(1, 4.1, 0.5):
+        plt.suptitle("exposure darker", fontsize=18, y=0.95)
+        plt.subplot(2, 5, 1 + i)
+        plt.imshow(adjust_gamma_generator(img, gamma))
+        plt.title(gamma)
         i += 1
     plt.show()
 
@@ -136,6 +159,7 @@ if __name__ == "__main__":
     source_dir, selected_noise = args_parser(args)
     source_db_path = source_dir
 
+    show_noise_examples("CelebA/db-ident", "00001_01.jpg")
     if selected_noise not in noise_types and selected_noise is not None:
         raise ValueError("This noise is not implemented")
 
@@ -180,4 +204,24 @@ if __name__ == "__main__":
             result_dir = create_dest_dir("gaussian_blur", s_dev)
             for img in tqdm(list_imgs):
                 result_img = gaussian_blur_generator(read_img(img), s_dev=s_dev)
+                write_img(result_img, img, result_dir)
+
+    if selected_noise in ["exposure_dark", None]:
+        print("-" * 80)
+        print("generate exposure darker\n")
+        for gamma in np.arange(1.5, 3.5, 0.5):
+            print("generate darker, gamma", gamma)
+            result_dir = create_dest_dir("adj_gamma", gamma)
+            for img in tqdm(list_imgs):
+                result_img = adjust_gamma_generator(read_img(img), gamma)
+                write_img(result_img, img, result_dir)
+
+    if selected_noise in ["exposure_light", None]:
+        print("-" * 80)
+        print("generate exposure lighter\n")
+        for gamma in np.arange(0.1, 0.6, 0.1):
+            print("generate lighter, gamma", gamma)
+            result_dir = create_dest_dir("adj_gamma", gamma)
+            for img in tqdm(list_imgs):
+                result_img = adjust_gamma_generator(read_img(img), gamma)
                 write_img(result_img, img, result_dir)
