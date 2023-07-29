@@ -15,7 +15,9 @@ noise_types = {
     "s_v_p",
     "poisson",
     "speckle",
-    "gaussian_blur, exposure_dark, exposure_light",
+    "gaussian_blur",
+    "exposure_dark",
+    "exposure_light",
 }
 
 
