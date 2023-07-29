@@ -9,7 +9,14 @@ from tqdm import tqdm
 
 skimage.io.use_plugin("pil")
 
-noise_types = {"gaussian", "s_v_p", "poisson", "speckle", "gaussian_blur, exposure_dark, exposure_light"}
+noise_types = {
+    "all",
+    "gaussian",
+    "s_v_p",
+    "poisson",
+    "speckle",
+    "gaussian_blur, exposure_dark, exposure_light",
+}
 
 
 def args_inpust():
@@ -18,7 +25,7 @@ def args_inpust():
         "-t",
         "--noise_type",
         default=None,
-        help="Specify noise type: gaussian, salt_vs_pepper, poisson, gaussian_blur",
+        help="Specify noise type: gaussian, salt_vs_pepper, poisson, gaussian_blur, exposure_dark, exposure_light, all",
     )
     parser.add_argument("-d", "--source_dir_path", default="CelebA/db-imgs")
     return parser.parse_args()
@@ -54,6 +61,7 @@ def gaussian_blur_generator(img, s_dev=1):
     # s_dev - standard deviation (default 1)
     img_w_blur = skimage.filters.gaussian(img, s_dev)
     return img_w_blur
+
 
 def adjust_gamma_generator(img, gamma=1):
     # s_dev - standard deviation (default 1)
@@ -165,7 +173,7 @@ if __name__ == "__main__":
 
     list_imgs = get_list_all_img(source_db_path)
 
-    if selected_noise in ["gaussian", None]:
+    if selected_noise in ["gaussian", "all"]:
         print("-" * 80)
         print("generate GAUSSIAN noise\n")
         for s_dev in np.arange(0.05, 0.35, 0.05):
@@ -178,7 +186,7 @@ if __name__ == "__main__":
                 )
                 write_img(result_img, img, result_dir)
 
-    if selected_noise in ["s_v_p", None]:
+    if selected_noise in ["s_v_p", "all"]:
         print("-" * 80)
         print("generate Salt_vs_Pepper noise\n")
         for var in np.arange(0.02, 0.22, 0.02):
@@ -188,7 +196,7 @@ if __name__ == "__main__":
                 result_img = salt_vs_pepper_noise_generator(read_img(img), amount=var)
                 write_img(result_img, img, result_dir)
 
-    if selected_noise in ["poisson", None]:
+    if selected_noise in ["poisson", "all"]:
         print("-" * 80)
         print("generate POISSON noise\n")
         result_dir = create_dest_dir("poisson")
@@ -196,7 +204,7 @@ if __name__ == "__main__":
             result_img = poisson_nosie_generator(read_img(img))
             write_img(result_img, img, result_dir)
 
-    if selected_noise in ["gaussian_blur", None]:
+    if selected_noise in ["gaussian_blur", "all"]:
         print("-" * 80)
         print("generate GAUSSIAN BLUR\n")
         for s_dev in np.arange(0.5, 5.5, 0.5):
@@ -206,7 +214,7 @@ if __name__ == "__main__":
                 result_img = gaussian_blur_generator(read_img(img), s_dev=s_dev)
                 write_img(result_img, img, result_dir)
 
-    if selected_noise in ["exposure_dark", None]:
+    if selected_noise in ["exposure_dark", "all"]:
         print("-" * 80)
         print("generate exposure darker\n")
         for gamma in np.arange(1.5, 3.5, 0.5):
@@ -216,7 +224,7 @@ if __name__ == "__main__":
                 result_img = adjust_gamma_generator(read_img(img), gamma)
                 write_img(result_img, img, result_dir)
 
-    if selected_noise in ["exposure_light", None]:
+    if selected_noise in ["exposure_light", "all"]:
         print("-" * 80)
         print("generate exposure lighter\n")
         for gamma in np.arange(0.1, 0.6, 0.1):
