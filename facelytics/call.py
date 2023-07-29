@@ -4,14 +4,12 @@ import numpy as np
 from commons import models
 
 model_name = "DeepFace"
-img_dir = "db_imgs_gaussian_"
-
+img_dir = "db-imgs_gaussian_"
 
 if model_name not in models:
     raise ValueError("Wrong model name")
 
-
-img_dir = "db_imgs_gaussian_"
+commands = []
 for i in np.arange(0.05, 0.3, 0.05):
     command = (
         "python3 facelytics/test_model.py -m "
@@ -20,10 +18,13 @@ for i in np.arange(0.05, 0.3, 0.05):
         + img_dir
         + "{:.2f}".format(i).replace(".", "_")
     )
+    commands.append(command)
+
+for com in commands:
     try:
         print("\n\n")
         print("-" * 80)
-        print("Running: ", command, "\n")
-        os.system(command)
+        print("Running: ", com, "\n")
+        os.system(com)
     except:
         pass
